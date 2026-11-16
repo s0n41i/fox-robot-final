@@ -98,6 +98,10 @@ All the data comes from one session, so different lighting, clothing or camera p
 
 ## First mechanical build
 
+<img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/8677334c-c593-4171-bd44-0fb50cad0c51" />
+
+<img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/33dd0fe3-f696-491e-81a1-3282412d22ff" />
+
 Initially, we’d sought to keep the mechanism to one fox head. This required an actuated pendulum for the head to appear and disappear laterally, as well as linear actuation for the head to appear and disappear vertically. Both linear and rotational motion would be actuated via stepper motor. A stepper motor was used because our system needed continuous precise motion.
 
 For the pendulum, a laser-cut, suspended MDF tower was supported on a square metal rod which acted as the pivoting point for the tower. On one end, the metal rod was secured to the stepper motor via set screw. On the other end, a bearing was used. Both the stepper motor and the bearing were secured to opposite facing walls in the housing that supported the structure.
