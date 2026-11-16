@@ -98,10 +98,6 @@ All the data comes from one session, so different lighting, clothing or camera p
 
 ## First mechanical build
 
-<img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/33dd0fe3-f696-491e-81a1-3282412d22ff" />
-
-<img width="934" height="876" alt="WhatsApp Image 2026-11-16 at 14 33 09 (1)" src="https://github.com/user-attachments/assets/39823565-cb4d-4a4d-9dec-686838df532c" />
-
 Initially, we’d sought to keep the mechanism to one fox head. This required an actuated pendulum for the head to appear and disappear laterally, as well as linear actuation for the head to appear and disappear vertically. Both linear and rotational motion would be actuated via stepper motor. A stepper motor was used because our system needed continuous precise motion.
 
 For the pendulum, a laser-cut, suspended MDF tower was supported on a square metal rod which acted as the pivoting point for the tower. On one end, the metal rod was secured to the stepper motor via set screw. On the other end, a bearing was used. Both the stepper motor and the bearing were secured to opposite facing walls in the housing that supported the structure.
@@ -113,6 +109,10 @@ This mechanism design when tested with a stepper motor had issues with the pivot
 The initial design also relied on a stepper motor with a 1:64 gear ratio; switching to a lower torque-yielding mechanism allowed use to use stepper motors with a 1:16 gear ratio, allowing faster movement of the mechanism.
 
 We also developed and tested a “head tilt” mechanism through gravitational force, and further plans were developed for ear actuation, although these were not tested or deployed due to time constraints and our switch to a different production method.
+
+<img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/33dd0fe3-f696-491e-81a1-3282412d22ff" />
+
+<img width="934" height="876" alt="WhatsApp Image 2026-11-16 at 14 33 09 (1)" src="https://github.com/user-attachments/assets/39823565-cb4d-4a4d-9dec-686838df532c" />
 
 ![The first build on the workshop bench](images/wip-early-prototype.jpg)
 
