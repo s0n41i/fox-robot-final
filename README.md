@@ -153,6 +153,6 @@ The fox follows one person at a time. With two in view it uses whichever MediaPi
 
 The code is in the camera, wekinator, processing and arduino folders. The rack and pinion CAD is in cad, the wiring and mechanism drawings are in diagrams, photos and videos are in images and videos, and the simulator for the first build is in simulator.
 
-## AI use
+## AI use and other acknowledgments
 
-This README was written by a human, and partially formatted / committed with Claude (for ease of reading), and then edited by a human again :-)
+This README was written by a human, and partially formatted / committed with Claude (for ease of reading), and then edited by a human again. Similarly, this was the approach taken to our final code (human written, AI-troubleshooting) :-) Due to time limitations, we also utilised an edited version of a CAD file from @3DStuffGuy on thingiverse.com
