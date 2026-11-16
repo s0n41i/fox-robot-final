@@ -98,9 +98,9 @@ All the data comes from one session, so different lighting, clothing or camera p
 
 ## First mechanical build
 
-<img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/8677334c-c593-4171-bd44-0fb50cad0c51" />
-
 <img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/33dd0fe3-f696-491e-81a1-3282412d22ff" />
+
+<img width="934" height="876" alt="WhatsApp Image 2026-11-16 at 14 33 09 (1)" src="https://github.com/user-attachments/assets/39823565-cb4d-4a4d-9dec-686838df532c" />
 
 Initially, we’d sought to keep the mechanism to one fox head. This required an actuated pendulum for the head to appear and disappear laterally, as well as linear actuation for the head to appear and disappear vertically. Both linear and rotational motion would be actuated via stepper motor. A stepper motor was used because our system needed continuous precise motion.
 
