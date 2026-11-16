@@ -54,7 +54,7 @@ The plate is sheet metal cut to an arch and hammered to catch the light. It hide
 
 [![Video from behind the plate](images/video-behind-the-plate.jpg)](videos/behind-the-plate.mp4)
 
-The mechanism from behind the plate (click to download video).
+The mechanism from behind the plate in action (click to download video).
 
 ## Hardware design
 
