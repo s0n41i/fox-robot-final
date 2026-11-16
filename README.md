@@ -20,7 +20,7 @@ The relationship between urban fox and urban human is reflective of the relation
 
 ## How it behaves
 
-Three fox heads sit behind a metal plate, one on each side and one at the top, and respond to where the visitor stands. Close, the fox hides. At a middle distance one head peeks out and retreats. Far away, one head comes out and stays. The head that moves is always the one furthest from the visitor: the right head if they stand on the left, the top head if they are central, the left head if they stand on the right. Holding a hand out while close brings out the head on the visitor's own side. An empty room is treated as far.
+The fox is represented with 3 fox heads. Three heads sit behind a metal plate, one on each side and one at the top, and respond to where and how a human approaches. When a person stands close, the fox hides. At a medium distance away, a head peeks out and retreats. Far away, a head comes out and stays for a bit before retreating. The fox will always appear away from the visitor, as it is timid. If a person stands to the left of the metal plate, a fox head will appear on the right. If they stand to the right, it will appear on the left, and if they stand central to the plate it will appear above the plate. To coax the fox out, the person must hold their hand out as if offering food. Holding a hand out while close brings out the fox head on the side the visitor stands. An empty room is treated as no human present (far away).
 
 ![The fox from the side](images/fox-side.jpg)
 
