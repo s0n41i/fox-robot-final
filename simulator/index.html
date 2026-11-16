@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fearful Fox Sim</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: workbench split. Left = the cutting mat with the machine on it, right = the Arduino IDE. */
+:root {
+  --bg: #FFFFFF;
+  --panel: #FFFFFF;
+  --panel-2: #F5F7F3;
+  --ink: #1D2622;
+  --muted: #5B6862;
+  --line: #D4DBD4;
+  --accent: #C4561F;
+  --accent-ink: #FFFFFF;
+  --focus: #2F6FB0;
+  --pass: #2D7A4C;
+  --pass-bg: #E3F1E7;
+  --fail: #B23A2E;
+  --fail-bg: #F8E4E1;
+  --warn: #8A5B00;
+  --warn-bg: #F6ECD6;
+  --code-bg: #FBFCFA;
+  --code-gutter: #F0F3EF;
+  --syn-kw: #8B3A9E;
+  --syn-type: #1D6B8F;
+  --syn-num: #A0521C;
+  --syn-str: #2D7A4C;
+  --syn-com: #7C8A83;
+  --syn-def: #1D2622;
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --cond: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color-scheme: light;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+.app { max-width: 1440px; margin: 0 auto; padding-block: 18px 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+h1 { font-family: var(--cond); font-weight: 600; font-size: 26px; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 2px 0 0; max-width: 62ch; }
+.tabs { display: flex; align-self: flex-start; min-height: 36px; gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+.tab { font: 500 13px var(--sans); color: var(--muted); background: transparent; border: 0; border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.tab .k { font-family: var(--cond); font-weight: 600; color: var(--accent); margin-right: 4px; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.grid > .col { grid-row: 1; }
+.grid > .col:first-child { grid-column: 1; }
+.grid > .code-col { grid-column: 2; background: var(--bg); }
+.grid.wide > .code-col { grid-column: 1 / -1; margin-left: 26%; padding-left: 14px; z-index: 2; box-shadow: -16px 0 28px -8px rgba(20, 30, 25, 0.28); }
+@media (max-width: 960px) { .grid { grid-template-columns: minmax(0, 1fr); } .grid > .col, .grid.wide > .code-col { grid-column: 1; grid-row: auto; margin-left: 0; padding-left: 0; box-shadow: none; } }
+.col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.stage { position: relative; border-radius: 10px; overflow: hidden; background: #FFFFFF; border: 1px solid var(--line); }
+.stage svg { display: block; width: 100%; height: auto; }
+.banner { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; pointer-events: none; }
+.chip { font: 500 12px var(--sans); padding: 3px 9px; border-radius: 999px; background: rgba(15,25,20,.72); color: #EAF1EC; font-variant-numeric: tabular-nums; }
+.chip.peek { background: #C4561F; color: #fff; }
+.chip.half { background: #8A5B00; color: #fff; }
+.chip.play { background: #2F6FB0; color: #fff; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.room { padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.label { font-family: var(--cond); font-weight: 600; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.room svg { width: 100%; height: auto; touch-action: none; cursor: grab; display: block; border-radius: 10px; background: #FFFFFF; border: 1px solid var(--line); }
+.room svg.locked { cursor: not-allowed; opacity: .75; }
+.readout { font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: pre-wrap; margin: 0; }
+.readout b { color: var(--ink); font-weight: 500; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 36px; }
+.btn { font: 500 13px var(--sans); border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 7px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.small { padding: 4px 9px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.spacer { flex: 1; }
+select { font: 13px var(--sans); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; }
+.status { font-size: 12px; color: var(--muted); }
+.editor { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; height: 460px; min-height: 200px; resize: vertical; }
+#code { width: 100%; height: 100%; border: 0; resize: none; padding: 10px 12px; font: 13px/1.5 var(--mono); background: var(--code-bg); color: var(--ink); tab-size: 2; }
+.dock { display: flex; flex-direction: column; min-width: 0; }
+.dock-tabs { display: flex; gap: 2px; padding: 6px 6px 0; border-bottom: 1px solid var(--line); }
+.dock-tab { font: 500 13px var(--sans); background: none; border: 0; border-bottom: 2px solid transparent; padding: 7px 10px; color: var(--muted); cursor: pointer; }
+.dock-tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.dock-tab .n { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 400; }
+.panel { height: 300px; overflow: auto; padding: 10px 12px; }
+#serial { font: 12px/1.55 var(--mono); margin: 0; white-space: pre-wrap; word-break: break-word; }
+#serial .w { color: var(--warn); }
+#serial .e { color: var(--fail); }
+#serial .i { color: var(--muted); }
+.tests { display: flex; flex-direction: column; gap: 8px; }
+.test { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; gap: 4px 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.test:last-child { border-bottom: 0; }
+.pill { font: 600 11px var(--cond); letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; text-align: center; background: var(--panel-2); color: var(--muted); }
+.pill.pass { background: var(--pass-bg); color: var(--pass); }
+.pill.fail { background: var(--fail-bg); color: var(--fail); }
+.pill.notyet { background: var(--warn-bg); color: var(--warn); }
+.pill.run { background: var(--panel-2); color: var(--focus); }
+.test h3 { margin: 0; font-size: 13px; font-weight: 600; }
+.test p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.test .detail { color: var(--ink); }
+.ref h3 { font-family: var(--cond); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+.ref h3:first-child { margin-top: 0; }
+.ref table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.ref td { border-top: 1px solid var(--line); padding: 5px 8px 5px 0; vertical-align: top; }
+.ref td:first-child { white-space: nowrap; font-family: var(--mono); font-size: 12px; }
+.ref p { margin: 4px 0; color: var(--muted); font-size: 12.5px; max-width: 70ch; }
+.ref code { font-family: var(--mono); font-size: 12px; }
+/* CodeMirror 5 core styles, trimmed and themed through the tokens above */
+.CodeMirror { font-family: var(--mono); font-size: 13px; line-height: 1.5; height: 100%; position: relative; overflow: hidden; background: var(--code-bg); color: var(--ink); direction: ltr; }
+.CodeMirror-lines { padding: 8px 0; cursor: text; min-height: 1px; }
+.CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 10px; border-radius: 0; border-width: 0; background: transparent; font-family: inherit; font-size: inherit; margin: 0; white-space: pre; word-wrap: normal; line-height: inherit; color: inherit; z-index: 2; position: relative; overflow: visible; -webkit-tap-highlight-color: transparent; font-variant-ligatures: contextual; }
+.CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler { background: var(--code-gutter); }
+.CodeMirror-gutters { border-right: 1px solid var(--line); background: var(--code-gutter); white-space: nowrap; position: absolute; left: 0; top: 0; min-height: 100%; z-index: 3; }
+.CodeMirror-linenumber { padding: 0 8px 0 6px; min-width: 22px; text-align: right; color: var(--syn-com); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.CodeMirror-cursor { border-left: 2px solid var(--accent); border-right: none; width: 0; position: absolute; pointer-events: none; }
+.CodeMirror-cursors { visibility: hidden; position: relative; z-index: 3; }
+.CodeMirror-focused .CodeMirror-cursors { visibility: visible; }
+.CodeMirror-selected { background: color-mix(in srgb, var(--focus) 18%, transparent); }
+.CodeMirror-focused .CodeMirror-selected { background: color-mix(in srgb, var(--focus) 26%, transparent); }
+.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background: color-mix(in srgb, var(--focus) 26%, transparent); }
+.CodeMirror-scroll { overflow: scroll !important; margin-bottom: -50px; margin-right: -50px; padding-bottom: 50px; height: 100%; outline: none; position: relative; z-index: 0; }
+.CodeMirror-sizer { position: relative; border-right: 50px solid transparent; }
+.CodeMirror-vscrollbar, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler { position: absolute; z-index: 6; display: none; outline: none; }
+.CodeMirror-vscrollbar { right: 0; top: 0; overflow-x: hidden; overflow-y: scroll; }
+.CodeMirror-hscrollbar { bottom: 0; left: 0; overflow-y: hidden; overflow-x: scroll; }
+.CodeMirror-scrollbar-filler { right: 0; bottom: 0; }
+.CodeMirror-gutter-filler { left: 0; bottom: 0; }
+.CodeMirror-gutter { white-space: normal; height: 100%; display: inline-block; vertical-align: top; margin-bottom: -50px; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: none !important; border: none !important; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-code { outline: none; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+div.CodeMirror-cursors { visibility: hidden; position: relative; z-index: 3; }
+div.CodeMirror-dragcursors { visibility: visible; }
+.CodeMirror-focused div.CodeMirror-cursors { visibility: visible; }
+.CodeMirror-crosshair { cursor: crosshair; }
+.CodeMirror-widget {}
+.CodeMirror-rtl pre { direction: rtl; }
+.cm-tab { display: inline-block; text-decoration: inherit; }
+.cm-keyword { color: var(--syn-kw); }
+.cm-type, .cm-variable-3 { color: var(--syn-type); }
+.cm-number, .cm-atom { color: var(--syn-num); }
+.cm-string, .cm-string-2 { color: var(--syn-str); }
+.cm-comment { color: var(--syn-com); font-style: italic; }
+.cm-meta { color: var(--syn-type); }
+.cm-def { color: var(--syn-def); font-weight: 500; }
+.cm-builtin { color: var(--syn-type); }
+.cm-variable, .cm-property, .cm-operator, .cm-punctuation { color: var(--ink); }
+.CodeMirror-matchingbracket { outline: 1px solid var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="app">
+  <div class="grid">
+    <section class="col" aria-label="Simulation">
+      <div class="tabs"><span class="tab" aria-selected="true">Belt lift on a turntable</span></div>
+      <div class="stage">
+        <svg id="stage" viewBox="-480 -420 960 790" role="img" aria-label="Front view of the plate and the fox mechanism"></svg>
+      </div>
+      <div class="room">
+        <svg id="room" viewBox="0 0 600 150" aria-label="Drag the visitor to move them around the room"></svg>
+        <label class="row" style="gap:6px" for="crouch"><input type="checkbox" id="crouch"> Crouch</label>
+      </div>
+    </section>
+
+    <section class="col code-col" aria-label="Code">
+      <div class="toolbar">
+        <button class="btn primary" id="run">Run</button>
+        <button class="btn" id="stop">Stop</button>
+        <button class="btn" id="reset">Reset to example</button>
+        <button class="btn" id="expand" aria-pressed="false">Expand</button>
+        <span class="spacer"></span>
+        <label class="status" for="speed">Speed</label>
+        <select id="speed">
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+        </select>
+      </div>
+      <div class="editor"><textarea id="code" spellcheck="false" aria-label="Arduino sketch"></textarea></div>
+      <div class="card dock">
+        <div class="dock-tabs" role="tablist" aria-label="Output">
+          <button class="dock-tab" role="tab" id="dt-serial" aria-selected="true" data-panel="serial">Serial monitor</button>
+          <button class="dock-tab" role="tab" id="dt-tests" aria-selected="false" data-panel="tests">Tests <span class="n" id="test-count"></span></button>
+          <button class="dock-tab" role="tab" id="dt-ref" aria-selected="false" data-panel="ref">Pins and functions</button>
+        </div>
+        <div class="panel" id="panel-serial"><pre id="serial"></pre></div>
+        <div class="panel" id="panel-tests" hidden>
+          <div class="toolbar" style="margin-bottom:6px">
+            <button class="btn primary small" id="runtests">Run all tests</button>
+            <span class="status" id="teststate"></span>
+          </div>
+          <div class="tests" id="tests"></div>
+        </div>
+        <div class="panel ref" id="panel-ref" hidden></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+
+<script id="core">
+/* ---------- Core: machine models, Arduino-to-JS translation, simulator, tests (no DOM) ---------- */
+var FOX = (function () {
+const RAD = Math.PI / 180, L1 = 170, L2 = 190, R = 300, HEAD = 50;
+
+const CONCEPTS = {
+  B: {
+    label: 'Concept B',
+    servos: {
+      3: { name: 'ears', range: 180, speed: 600, init: 90 },
+    },
+    lift: true,
+    hideLimit: 10,
+  },
+};
+
+const EXAMPLES = {
+B: `/*
+   The Fearful Fox
+
+   Listens for serial messages and moves the fox
+   according to the class sent from Wekinator through Processing.
+
+   Class 1 = hide
+   Class 2 = peek out on the left
+   Class 3 = peek out up and to the left
+   Class 4 = peek out over the top
+   Class 5 = peek out up and to the right
+   Class 6 = peek out on the right
+*/
+
+//Servo and Stepper libraries
+#include <Servo.h>
+#include <Stepper.h>
+
+Servo servoEars;                          // pulls the ears down with a wire
+Stepper liftStepper(2048, 8, 10, 9, 11);  // slides the fox in and out on the belt
+Stepper turnStepper(2048, 4, 6, 5, 7);    // turns the lift around the plate
+
+int foxCode = -1;        // the newest class from Wekinator
+int lastCode = -1;       // the class the fox last moved for
+int foxOut = 0;          // 0 = hidden, 1 = peeking out
+int turnPosition = 512;  // where the lift points, in steps: 0 = left, 512 = up, 1024 = right
+
+void setup() {
+  Serial.begin(9600);  // initialise the serial communication
+
+  servoEars.attach(3);  // ear servo on pin 3
+  pinMode(13, OUTPUT);  // rattle motor on pin 13
+
+  liftStepper.setSpeed(12);  // 12 turns a minute
+  turnStepper.setSpeed(12);
+
+  servoEars.write(90);  // ears up
+
+  // find the start: pull the lift all the way in,
+  // turn left onto the stop peg, then point straight up
+  liftStepper.step(-3400);
+  turnStepper.step(-1124);
+  turnStepper.step(512);
+}
+
+void loop() {
+  // wait for a message to arrive
+  if (Serial.available()) {
+    // save the message when it arrives
+    foxCode = Serial.read();
+  }
+
+  // only move when the class changes
+  if (foxCode != lastCode) {
+    lastCode = foxCode;
+
+    switch (foxCode) {
+      case 1:
+        hide();
+        break;
+      case 2:
+        peek(0);  // left
+        break;
+      case 3:
+        peek(256);  // up and to the left
+        break;
+      case 4:
+        peek(512);  // over the top
+        break;
+      case 5:
+        peek(768);  // up and to the right
+        break;
+      case 6:
+        peek(1024);  // right
+        break;
+      default:
+        hide();
+        break;
+    }
+  }
+}
+
+// pull the fox all the way in, with the ears down and the plate rattling
+void hide() {
+  if (foxOut == 1) {
+    servoEars.write(0);       // ears down
+    digitalWrite(13, HIGH);   // rattle on
+    liftStepper.step(-3072);  // slide all the way in (about 90 mm)
+    digitalWrite(13, LOW);    // rattle off
+    foxOut = 0;
+  }
+}
+
+// hide, turn to a new spot, then come out slowly: ears first, then the face
+void peek(int newPosition) {
+  hide();
+  turnStepper.step(newPosition - turnPosition);  // turn to the new spot
+  turnPosition = newPosition;
+  delay(300);                // wait for the head to stop swinging
+
+  servoEars.write(90);       // ears up
+  liftStepper.step(1707);    // ears out (about 50 mm)
+  delay(700);                // wait
+  liftStepper.step(1365);    // whole face out (about 90 mm)
+  foxOut = 1;
+}
+`,
+};
+
+/* ---------- Arduino C++ (a friendly subset) to JavaScript generators ---------- */
+const TYPES = '(?:unsigned\\s+long\\s+long|unsigned\\s+long|unsigned\\s+int|unsigned\\s+char|unsigned\\s+short|long\\s+long|long\\s+double|signed\\s+char|unsigned|void|int|float|double|long|short|bool|boolean|byte|char|word|String|size_t|u?int(?:8|16|32|64)_t)';
+
+function skipStr(s, i) {
+  const q = s[i]; let j = i + 1;
+  while (j < s.length && s[j] !== q) { if (s[j] === '\\') j++; if (s[j] === '\n') break; j++; }
+  return j + 1;
+}
+function skipWs(s, i) { while (i < s.length && /\s/.test(s[i])) i++; return i; }
+function matchClose(s, k, open, close) {
+  let depth = 0;
+  for (let j = k; j < s.length; j++) {
+    const c = s[j];
+    if (c === '"' || c === "'") { j = skipStr(s, j) - 1; continue; }
+    if (c === open) depth++;
+    else if (c === close && --depth === 0) return j;
+  }
+  return -1;
+}
+function findStmtEnd(s, n) {
+  let depth = 0;
+  for (let j = n; j < s.length; j++) {
+    const c = s[j];
+    if (c === '"' || c === "'") { j = skipStr(s, j) - 1; continue; }
+    if ('([{'.includes(c)) depth++;
+    else if (')]}'.includes(c)) depth--;
+    else if (c === ';' && depth === 0) return j;
+  }
+  return s.length - 1;
+}
+function splitTop(list) {
+  const out = []; let depth = 0, cur = '';
+  for (const c of list) {
+    if (c === '(') depth++; if (c === ')') depth--;
+    if (c === ',' && depth === 0) { out.push(cur); cur = ''; } else cur += c;
+  }
+  out.push(cur); return out;
+}
+function stripComments(s) {
+  let out = '', i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '"' || c === "'") { const j = skipStr(s, i); out += s.slice(i, j); i = j; continue; }
+    if (c === '/' && s[i + 1] === '/') { while (i < s.length && s[i] !== '\n') i++; continue; }
+    if (c === '/' && s[i + 1] === '*') { const e = s.indexOf('*/', i + 2); const end = e < 0 ? s.length : e + 2; out += s.slice(i, end).replace(/[^\n]/g, ' '); i = end; continue; }
+    out += c; i++;
+  }
+  return out;
+}
+function cleanParams(p) {
+  return p.split(',').map(x => x.trim()).filter(x => x && x !== 'void')
+    .map(x => x.replace(new RegExp('^(?:const\\s+)?' + TYPES + '[\\s*&]+'), '').replace(/\[\s*\]/g, '')).join(', ');
+}
+function addLoopTicks(s) {
+  let out = '', i = 0; const doEnds = new Set();
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '"' || c === "'") { const j = skipStr(s, i); out += s.slice(i, j); i = j; continue; }
+    if (/[A-Za-z_]/.test(c) && (i === 0 || !/[\w$.]/.test(s[i - 1]))) {
+      let j = i; while (j < s.length && /\w/.test(s[j])) j++;
+      const w = s.slice(i, j);
+      if (w === 'do') {
+        const k = skipWs(s, j);
+        if (s[k] === '{') { doEnds.add(matchClose(s, k, '{', '}')); out += s.slice(i, k + 1) + ' yield 0;'; i = k + 1; continue; }
+      }
+      if (w === 'while' || w === 'for') {
+        const k = skipWs(s, j);
+        if (s[k] === '(') {
+          const e = matchClose(s, k, '(', ')');
+          if (e < 0) throw new Error('A "' + w + '" is missing its closing bracket )');
+          let p = i - 1; while (p >= 0 && /\s/.test(s[p])) p--;
+          if (w === 'while' && doEnds.has(p)) { out += s.slice(i, e + 1); i = e + 1; continue; }
+          const n = skipWs(s, e + 1);
+          if (s[n] === '{') { out += s.slice(i, n + 1) + ' yield 0;'; i = n + 1; continue; }
+          if (s[n] === ';') { out += s.slice(i, e + 1) + ' { yield 0; }'; i = n + 1; continue; }
+          const st = findStmtEnd(s, n);
+          out += s.slice(i, e + 1) + ' { yield 0; ' + addLoopTicks(s.slice(n, st + 1)) + ' }'; i = st + 1; continue;
+        }
+      }
+      out += w; i = j; continue;
+    }
+    out += c; i++;
+  }
+  return out;
+}
+function wrapCalls(s, names) {
+  let out = '', i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === '"' || c === "'") { const j = skipStr(s, i); out += s.slice(i, j); i = j; continue; }
+    if (/[A-Za-z_]/.test(c) && (i === 0 || !/[\w$.]/.test(s[i - 1]))) {
+      let j = i; while (j < s.length && /\w/.test(s[j])) j++;
+      const w = s.slice(i, j); const k = skipWs(s, j);
+      const meth = s.slice(j).match(/^\s*\.\s*step\s*\(/);
+      if (meth) {
+        const open = j + meth[0].length - 1, e = matchClose(s, open, '(', ')');
+        if (e < 0) throw new Error('The call to ' + w + '.step( is missing its closing bracket )');
+        out += '(yield* ' + w + '.step(' + wrapCalls(s.slice(open + 1, e), names) + '))';
+        i = e + 1; continue;
+      }
+      if (names.has(w) && s[k] === '(' && !/function\*\s*$/.test(out.slice(-14))) {
+        const e = matchClose(s, k, '(', ')');
+        if (e < 0) throw new Error('The call to ' + w + '( is missing its closing bracket )');
+        const args = wrapCalls(s.slice(k + 1, e), names);
+        if (w === 'delay') out += "(yield ['d', (" + args + ')])';
+        else if (w === 'delayMicroseconds') out += "(yield ['d', (" + args + ')/1000])';
+        else out += '(yield* ' + w + '(' + args + '))';
+        i = e + 1; continue;
+      }
+      out += w; i = j; continue;
+    }
+    out += c; i++;
+  }
+  return out;
+}
+function transpile(src) {
+  let s = stripComments(String(src).replace(/\r/g, ''));
+  const ESC = { n: 10, t: 9, r: 13, '0': 0 };
+  s = s.replace(/'(\\.|[^'\\\n])'/g, (m, ch) => String(ch.length === 2 ? (ch[1] in ESC ? ESC[ch[1]] : ch.charCodeAt(1)) : ch.charCodeAt(0)));
+  s = s.replace(/^[ \t]*#include[^\n]*/gm, '');
+  s = s.replace(/^[ \t]*#define[ \t]+(\w+)[ \t]+([^\n]+)/gm, 'const $1 = $2;');
+  s = s.replace(/^[ \t]*#[^\n]*/gm, '');
+  s = s.replace(/\b(Servo|Encoder|Stepper)\s+([A-Za-z_][^;]*);/g, (m, cls, list) => 'let ' + splitTop(list).map(d => {
+    d = d.trim(); const mm = d.match(/^(\w+)\s*(?:\(([\s\S]*)\))?$/);
+    return mm ? mm[1] + ' = new ' + cls + '(' + (mm[2] || '') + ')' : d;
+  }).join(', ') + ';');
+  const head = '(^|[;{}\\n])([ \\t]*)(?:static\\s+|inline\\s+)*' + TYPES + '[\\s*&]+(\\w+)\\s*\\(([^()]*)\\)\\s*';
+  s = s.replace(new RegExp(head + ';', 'g'), (m, a, ws) => a + ws);
+  const names = new Set(['delay', 'delayMicroseconds']);
+  s = s.replace(new RegExp(head + '\\{', 'g'), (m, a, ws, name, params) => { names.add(name); return a + ws + 'function* ' + name + '(' + cleanParams(params) + ') {'; });
+  s = s.replace(/\(\s*(?:unsigned\s+long|unsigned\s+int|unsigned|long|int|byte|short|char|word|u?int(?:8|16|32)_t)\s*\)/g, '~~');
+  s = s.replace(/\(\s*(?:float|double)\s*\)/g, '+');
+  s = s.replace(new RegExp('\\b(const\\s+)?(?:static\\s+|volatile\\s+)*(?:const\\s+)?' + TYPES + '(?:\\s*[*&])?\\s+(?=[A-Za-z_])', 'g'), (m, c) => (c ? 'const ' : 'let '));
+  s = s.replace(/\b(let|const)\s+(\w+)\s*\[[^\]]*\]\s*\[[^\]]*\]\s*=\s*\{([\s\S]*?\})\s*\}/g, (m, k, n, body) => k + ' ' + n + ' = [' + body.replace(/\{/g, '[').replace(/\}/g, ']') + ']');
+  s = s.replace(/\b(let|const)\s+(\w+)\s*\[[^\]]*\]\s*=\s*\{([^{}]*)\}/g, '$1 $2 = [$3]');
+  s = s.replace(/\b(let|const)\s+(\w+)\s*\[\s*([^\]]+)\]\s*;/g, '$1 $2 = new Array($3).fill(0);');
+  s = s.replace(/\blet\s+([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)\s*;/g, (m, list) => 'let ' + list.split(',').map(x => x.trim() + ' = 0').join(', ') + ';');
+  s = addLoopTicks(s);
+  s = wrapCalls(s, names);
+  return s;
+}
+
+/* ---------- Geometry ---------- */
+function unit(deg) { return [Math.sin(deg * RAD), Math.cos(deg * RAD)]; }   // 0 = up, clockwise positive, y up
+function poseOf(sim) {
+  const a = n => sim.servo[n] ? sim.servo[n].angle : 0;
+  const phi = sim.turn.angle - 90, r = 240 + sim.lift.x, u = unit(phi);
+  return { phi, head: [r * u[0], r * u[1]], carriageR: r - 90, ang: sim.swing.a, earL: a(3), earR: a(3) };
+}
+
+function mulberry(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const fmtNum = v => (typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : String(v));
+
+/* ---------- Simulator ---------- */
+const API = ['pinMode', 'digitalWrite', 'digitalRead', 'analogWrite', 'analogRead', 'millis', 'micros', 'random', 'randomSeed', 'map', 'constrain',
+  'abs', 'min', 'max', 'sq', 'sqrt', 'pow', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 'floor', 'ceil', 'round', 'fabs', 'radians', 'degrees',
+  'PI', 'HALF_PI', 'TWO_PI', 'DEG_TO_RAD', 'RAD_TO_DEG', 'HIGH', 'LOW', 'INPUT', 'OUTPUT', 'INPUT_PULLUP', 'LED_BUILTIN', 'Serial', 'Servo', 'Encoder', 'Stepper', 'Sense', 'F', 'NULL'];
+
+class Sim {
+  constructor(key, code, opts = {}) {
+    this.key = key; this.cfg = CONCEPTS[key]; this.rx = [];
+    this.turn = { angle: 70, v: 0 };   // where the turntable happens to be at power-on (0 = left, 180 = right)
+    this.swing = { a: 0, v: 0, prev: 70, omega: 0 };
+    this.t = 0; this.physT = 0; this.wake = 0; this.gen = null; this.phase = 'setup';
+    this.servo = {};
+    for (const [pin, c] of Object.entries(this.cfg.servos)) this.servo[pin] = Object.assign({}, c, { angle: c.init, target: c.init, attached: false });
+    this.pins = {}; this.pwm = {};
+    this.lift = { x: this.cfg.lift ? 37 : 0, v: 0 }; this.encOffset = 0;
+    this.scenario = opts.scenario || null;
+    this.viewer = Object.assign({ x: 60, d: 150, crouch: false }, opts.viewer || {}, this.scenario ? this.scenario(0) : {});
+    this.prevD = this.viewer.d; this.sense = { x: 0, d: 0, crouch: false, speed: 0, present: false }; this.readSense(); this.nextSense = 100;
+    this.out = opts.out || (() => {}); this.onSample = opts.onSample || null; this.nextSample = 0;
+    this.warned = new Map(); this.stats = { limit: 0, collide: 0, endstop: 0, busy: 0 }; this.error = null; this.dead = false;
+    this.rand = mulberry(opts.seed || 7);
+    this.prog = null; this.js = '';
+    if (code != null) this.compile(code);
+  }
+  say(text, kind) { this.out(text, kind || ''); }
+  warnOnce(id, text) { if (!this.warned.has(id)) { this.warned.set(id, text); this.say('⚠ ' + text, 'w'); } }
+  fail(msg) { this.dead = true; this.error = msg; this.say('✖ ' + msg, 'e'); }
+  compile(code) {
+    try { this.js = transpile(code); }
+    catch (e) { this.fail("Couldn't read the sketch: " + e.message); return; }
+    try {
+      const factory = new Function(...API, '"use strict";\n' + this.js + '\n;return { setup: typeof setup === "function" ? setup : null, loop: typeof loop === "function" ? loop : null };');
+      this.prog = factory(...this.api());
+    } catch (e) {
+      this.fail("Couldn't read the sketch: " + friendly(e) + '. Check for a missing ; or bracket, or a name that is not defined.');
+      return;
+    }
+    if (!this.prog.setup && !this.prog.loop) this.fail('The sketch needs a void setup() and a void loop().');
+  }
+  api() {
+    const sim = this;
+    class Servo {
+      constructor() { this.pin = null; this.last = 90; }
+      attach(pin) {
+        if (!sim.servo[pin]) { sim.warnOnce('attach' + pin, 'Nothing is wired to pin ' + pin + ' in ' + sim.cfg.label + '. Servo pins are ' + Object.keys(sim.servo).join(', ') + '.'); return 0; }
+        this.pin = pin; sim.servo[pin].attached = true; return 1;
+      }
+      write(v) {
+        v = Number(v);
+        if (this.pin == null) { sim.warnOnce('unattached', 'A servo was written to before attach(pin) was called, so nothing moved.'); return; }
+        const s = sim.servo[this.pin];
+        if (!(v >= 0 && v <= s.range)) {
+          sim.stats.limit++;
+          sim.warnOnce('lim' + this.pin, s.name + '.write(' + fmtNum(v) + ') is outside 0 to ' + s.range + '°. A real servo would stop at its end, so the sim does too.');
+          v = Number.isFinite(v) ? Math.max(0, Math.min(s.range, v)) : s.target;
+        }
+        s.target = v; this.last = v;
+      }
+      writeMicroseconds(us) { const s = this.pin != null ? sim.servo[this.pin] : { range: 180 }; this.write((Number(us) - 500) / 2000 * s.range); }
+      read() { return Math.round(this.last); }
+      attached() { return this.pin != null; }
+      detach() { if (this.pin != null) sim.servo[this.pin].attached = false; this.pin = null; }
+    }
+    class Encoder {
+      read() { return sim.cfg.lift ? Math.round(sim.lift.x * 20) - sim.encOffset : 0; }
+      write(n) { if (sim.cfg.lift) sim.encOffset = Math.round(sim.lift.x * 20) - Number(n); }
+    }
+    class Stepper {
+      constructor(stepsPerTurn, ...pins) {
+        this.spt = Number(stepsPerTurn) || 2048; this.rpm = 1;
+        pins = pins.map(Number);
+        this.job = pins.includes(8) ? 'lift' : (pins.includes(4) ? 'turn' : null);
+        if (!this.job) sim.warnOnce('steppins', 'This stepper is not on a wired driver. The lift driver is on pins 8 to 11, the turntable driver on pins 4 to 7.');
+      }
+      setSpeed(rpm) {
+        this.rpm = Number(rpm) || 1;
+        if (this.rpm > 15) sim.warnOnce('rpm', 'setSpeed(' + fmtNum(this.rpm) + ') is too fast. The 28BYJ-48 datasheet only promises about 15 turns a minute with no load, so carrying the fox it will stall and just buzz.');
+        else if (this.rpm > 13) sim.warnOnce('rpm', 'setSpeed(' + fmtNum(this.rpm) + ') is risky. Even with the belt counterweight, the 28BYJ-48 has almost no strength left near 15 turns a minute, so it may skip steps.');
+      }
+      *step(n) {
+        n = Math.round(Number(n) || 0);
+        if (!n) return;
+        const ms = Math.abs(n) * 60000 / (this.spt * this.rpm);
+        const turns = this.rpm > 15 ? 0 : Math.sign(n) * this.rpm / 60 * 2048 / this.spt;   // motor turns per second
+        if (this.job === 'lift') sim.lift.v = turns * 60;    // 12-tooth, 5 mm pitch pulley: 60 mm of belt per turn
+        if (this.job === 'turn') sim.turn.v = turns * 360;   // turntable on the motor shaft: 360 degrees per turn
+        yield ['d', ms];
+        sim.lift.v = 0; sim.turn.v = 0;
+      }
+    }
+    let line = '';
+    const Serial = {
+      begin() {}, flush() {}, setTimeout() {},
+      available() { return sim.rx.length; },
+      read() { return sim.rx.length ? sim.rx.shift() : -1; },
+      peek() { return sim.rx.length ? sim.rx[0] : -1; },
+      parseInt() { let n = 0, seen = false; while (sim.rx.length && !(sim.rx[0] >= 48 && sim.rx[0] <= 57)) sim.rx.shift(); while (sim.rx.length && sim.rx[0] >= 48 && sim.rx[0] <= 57) { n = n * 10 + sim.rx.shift() - 48; seen = true; } return seen ? n : 0; },
+      print(x, d) { line += (typeof x === 'number' && d != null ? x.toFixed(d) : fmtNum(x)); },
+      println(x, d) { if (x !== undefined) this.print(x, d); sim.say(line); line = ''; },
+    };
+    const Sense = {
+      present: () => sim.sense.present, x: () => sim.sense.x, distance: () => sim.sense.d,
+      speed: () => sim.sense.speed, crouching: () => sim.sense.crouch,
+    };
+    const random = (a, b) => (b === undefined ? Math.floor(sim.rand() * a) : Math.floor(a + sim.rand() * (b - a)));
+    return [
+      () => {}, (p, v) => { sim.pins[p] = v ? 1 : 0; },
+      p => (sim.cfg.lift && Number(p) === 12 ? (sim.lift.x <= 0.5 ? 0 : 1) : (sim.pins[p] || 0)),
+      (p, v) => {
+        if (![3, 5, 6, 9, 10].includes(Number(p))) sim.warnOnce('pwm' + p, 'analogWrite(' + p + ', ...) does nothing on a Nano Every. Its PWM pins are 3, 5, 6, 9 and 10.');
+        sim.pwm[p] = Math.max(0, Math.min(255, Math.floor(Number(v) || 0)));
+      },
+      () => 0, () => Math.floor(sim.t), () => Math.floor(sim.t * 1000), random, () => {},
+      (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c, (x, a, b) => Math.min(b, Math.max(a, x)),
+      Math.abs, Math.min, Math.max, x => x * x, Math.sqrt, Math.pow, Math.sin, Math.cos, Math.tan, Math.asin, Math.acos, Math.atan, Math.atan2,
+      Math.floor, Math.ceil, Math.round, Math.abs, d => d * RAD, r => r / RAD,
+      Math.PI, Math.PI / 2, Math.PI * 2, RAD, 1 / RAD, 1, 0, 0, 1, 2, 13, Serial, Servo, Encoder, Stepper, Sense, s => s, null,
+    ];
+  }
+  readSense() {
+    const v = this.viewer, inst = (this.prevD - v.d) / 0.1;
+    this.prevD = v.d;
+    this.sense = { x: Math.round(v.x), d: Math.round(v.d), crouch: !!v.crouch, present: v.d < 200, speed: Math.round((this.sense.speed || 0) * 0.5 + inst * 0.5) };
+    // Pretend Wekinator: one classifier. 1 = hide, 2 = left, 3 = up-left, 4 = top, 5 = up-right, 6 = right.
+    // The camera sees 2 m. Hides when someone stands within 1 m or rushes at it. Comes out on the side away from the visitor when they
+    // are further away or crouching, and over the top when nobody is there.
+    // Like FoxBridge, it only sends a class when it changes.
+    const se = this.sense, scared = se.present && !se.crouch && (se.d < 100 || se.speed > 60);
+    const angle = !se.present ? 90 : 90 - se.x * 0.9;
+    const cls = scared ? 1 : 2 + Math.max(0, Math.min(4, Math.round(angle / 45)));
+    if (cls !== this.wek) { this.wek = cls; if (this.rx.length < 64) this.rx.push(cls); }
+  }
+  advance(ms, budget) {
+    budget = budget || 400000;
+    const end = this.t + ms;
+    while (this.t < end && !this.dead) {
+      if (this.wake > this.t) { this.physicsTo(Math.min(this.wake, end)); continue; }
+      if (!this.prog) { this.physicsTo(end); break; }
+      if (!this.gen) {
+        const fn = this.phase === 'setup' ? this.prog.setup : this.prog.loop;
+        if (!fn) { if (this.phase === 'setup') { this.phase = 'loop'; continue; } this.physicsTo(end); break; }
+        this.gen = fn();
+      }
+      let r;
+      try { r = this.gen.next(); } catch (e) { this.fail('Stopped: ' + friendly(e) + (this.phase === 'setup' ? ' (in setup)' : '')); break; }
+      if (--budget <= 0) {
+        this.stats.busy++;
+        this.warnOnce('busy', 'The sketch is running a lot of code without any delay(). That is fine on a real Arduino, but the sim had to skip ahead.');
+        this.physicsTo(end); break;
+      }
+      if (r.done) { this.gen = null; if (this.phase === 'setup') this.phase = 'loop'; this.wake = this.t + 0.01; continue; }
+      if (Array.isArray(r.value)) {
+        const d = Number(r.value[1]);
+        if (!(d >= 0)) this.warnOnce('delay', 'delay() got ' + r.value[1] + ', which is not a positive number of milliseconds.');
+        this.wake = this.t + (d > 0 ? d : 0);
+      } else this.wake = this.t + 0.05;
+    }
+  }
+  physicsTo(T) {
+    while (this.physT + 1 <= T) { this.step(1); this.physT += 1; }
+    this.t = Math.max(this.t, T);
+  }
+  step(dt) {
+    const s = dt / 1000, tNow = this.physT + dt;
+    for (const sv of Object.values(this.servo)) {
+      if (!sv.attached) continue;
+      const d = sv.target - sv.angle, m = sv.speed * s;
+      sv.angle = Math.abs(d) <= m ? sv.target : sv.angle + Math.sign(d) * m;
+    }
+    if (this.cfg.lift) {
+      const L = this.lift;
+      L.x += L.v * s;
+      if (L.x > 100) {
+        this.stats.endstop++;
+        this.warnOnce('end', 'The lift ran into its outer end, so the stepper skipped steps and now thinks the fox is further out than it is. Use fewer steps.');
+        L.x = 100;
+      }
+      if (L.x < 0) L.x = 0;
+      const T = this.turn, w = this.swing;
+      T.angle += T.v * s;
+      if (T.angle > 180) {
+        this.stats.endstop++;
+        this.warnOnce('turnend', 'The turntable ran into its right-hand stop, so the stepper skipped steps and its angle is now wrong. Turn fewer steps.');
+        T.angle = 180;
+      }
+      if (T.angle < 0) T.angle = 0;   // the left-hand stop peg, used for homing
+      const omega = (T.angle - w.prev) / s;
+      w.v -= (omega - w.omega) * 0.3;
+      w.prev = T.angle; w.omega = omega;
+      w.v += (-60 * w.a - 4 * w.v) * s; w.a += w.v * s;
+    }
+    if (this.scenario) Object.assign(this.viewer, this.scenario(tNow));
+    if (tNow >= this.nextSense) { this.nextSense = tNow + 100; this.readSense(); }
+    if (tNow % 10 < dt) {
+      const p = poseOf(this);
+      if (p.head[1] - HEAD < -R || (p.elbow && p.elbow[1] < -R + 5)) {
+        this.stats.collide++;
+        this.warnOnce('hit', 'The fox hit the base. Keep it within about 115° of the top.');
+      }
+    }
+    if (this.onSample && tNow >= this.nextSample) { this.nextSample = tNow + 50; this.onSample(this.sample(tNow)); }
+  }
+  sample(t) {
+    const p = poseOf(this), rh = Math.hypot(p.head[0], p.head[1]);
+    return { t, hx: p.head[0], hy: p.head[1], ang: p.ang, rh, peek: rh > 285, hidden: rh < 250, vx: this.viewer.x, vd: this.viewer.d };
+  }
+}
+function friendly(e) {
+  const m = String(e && e.message || e);
+  const nd = m.match(/^(\w+) is not defined/);
+  if (nd) return '"' + nd[1] + '" is not defined';
+  const nf = m.match(/(\S+) is not a function/);
+  if (nf) return nf[1] + ' is not a function';
+  return m;
+}
+
+/* ---------- Test scenes and checks ---------- */
+const SCENES = {
+  approach: { dur: 40000, fn: t => ({ x: 50, crouch: false, d: t < 25000 ? 240 : (t < 27000 ? 240 - (t - 25000) / 2000 * 190 : 50) }) },
+  sides: { dur: 60000, fn: t => ({ x: t < 30000 ? 70 : -70, d: 150, crouch: false }) },
+  far: { dur: 30000, fn: () => ({ x: -60, d: 170, crouch: false }) },
+  crouch: { dur: 80000, fn: t => ({ x: 60, d: 70, crouch: t >= 40000 }) },
+};
+const norm = a => ((a % 360) + 540) % 360 - 180;
+const s1 = n => (Math.round(n * 10) / 10).toFixed(1);
+const ok = d => ({ status: 'pass', detail: d }), no = d => ({ status: 'fail', detail: d });
+const TESTS = [
+  { id: 'hide', name: 'Hides when someone walks up', scene: 'approach',
+    desc: 'A visitor waits out of view, then walks straight at the fox. It must be fully hidden soon after they come within 1 m (within 10 s, because the stepper lift is slow), and stay hidden.',
+    check(r) {
+      const S = r.samples, i = S.findIndex(x => x.vd < 100);
+      if (i < 0) return no('The visitor never got close, so this could not be checked.');
+      const t0 = S[i].t, after = S.filter(x => x.t >= t0), firstHidden = after.find(x => x.hidden);
+      if (!firstHidden) return no('Never hid after the visitor got within 1 m.');
+      const lag = (firstHidden.t - t0) / 1000;
+      const limit = CONCEPTS[r.key].hideLimit;
+      if (lag > limit) return no('Took ' + s1(lag) + ' s to hide. It needs to be under ' + limit + ' s.');
+      const back = after.find(x => x.t > firstHidden.t && !x.hidden);
+      if (back) return no('Hid, but came back out ' + s1((back.t - t0) / 1000) + ' s later while the visitor was still close.');
+      return ok(lag <= 0 ? 'Was already hidden when the visitor came close, and stayed hidden.' : 'Hidden ' + s1(lag) + ' s after the visitor came within 1 m.');
+    } },
+  { id: 'opposite', name: 'Peeks from the side away from you', scene: 'sides',
+    desc: 'A visitor stands on the right for 30 s, then on the left for 30 s. The fox should peek out on the opposite side each time and never toward them.',
+    check(r) {
+      const phases = [{ from: 2000, to: 30000, vx: 70, where: 'right' }, { from: 36000, to: 60000, vx: -70, where: 'left' }];
+      for (const p of phases) {
+        const peeks = r.samples.filter(x => x.t >= p.from && x.t < p.to && x.peek);
+        if (!peeks.length) return no('Never peeked out while the visitor stood on the ' + p.where + '.');
+        const wrong = peeks.filter(x => Math.sign(x.hx) === Math.sign(p.vx) && Math.abs(x.hx) > 20);
+        if (wrong.length) return no('Peeked out toward the visitor on the ' + p.where + ' for ' + s1(wrong.length * 0.05) + ' s.');
+      }
+      return ok('Peeked left while the visitor stood right, then switched to the right when they moved left.');
+    } },
+  { id: 'upright', name: 'Head stays upright', scene: 'sides',
+    desc: 'Whenever the fox is peeking, its head should be within 20° of level, even out on the sides.',
+    check(r) {
+      const peeks = r.samples.filter(x => x.peek);
+      if (!peeks.length) return no('Never peeked, so there was nothing to check.');
+      const m = Math.max(...peeks.map(x => Math.abs(norm(x.ang))));
+      return m <= 20 ? ok('Head tilted at most ' + Math.round(m) + '° while peeking.') : no('Head tilted ' + Math.round(m) + '° while peeking. Check the weight hanging under the head.');
+    } },
+  { id: 'clear', name: 'Comes out when you are far away', scene: 'far',
+    desc: 'A visitor stands still on the left, 1.7 m away. The fox should come out on the right.',
+    check(r) {
+      const peeks = r.samples.filter(x => x.peek);
+      if (!peeks.length) return no('Stayed hidden for 30 s with the visitor far away.');
+      const wrong = peeks.filter(x => x.hx < -20);
+      if (wrong.length) return no('Came out on the visitor\'s side (left) for ' + s1(wrong.length * 0.05) + ' s.');
+      return ok('Came out on the right after ' + s1(peeks[0].t / 1000) + ' s.');
+    } },
+  { id: 'safe', name: 'Nothing breaks', scene: null,
+    desc: 'Across all the scenes: no errors, no servo told to go past its limit, nothing hits the base, the lift never slams its end stops.',
+    check(runs) {
+      const issues = [];
+      for (const [name, r] of Object.entries(runs)) {
+        if (name === 'crouch') continue;
+        if (r.error && !issues.includes(r.error)) issues.push(r.error);
+        for (const w of r.warnings) if (!issues.includes(w)) issues.push(w);
+      }
+      return issues.length ? no(issues.slice(0, 3).join(' ')) : ok('No errors, no servo pushed past its limit, nothing hit the base.');
+    } },
+  { id: 'crouch', name: 'Comes out when you crouch', scene: 'crouch',
+    desc: 'A visitor stands close on the right (0.7 m), then crouches. The fox should stay hidden while they stand, then come out on the left once they crouch.',
+    check(r) {
+      const stand = r.samples.filter(x => x.t >= 20000 && x.t < 40000 && !x.hidden);
+      if (stand.length) return no('Showed itself for ' + s1(stand.length * 0.05) + ' s while the visitor stood close.');
+      const peeks = r.samples.filter(x => x.t >= 40000 && x.peek);
+      if (!peeks.length) return no('Stayed hidden after the visitor crouched.');
+      const wrong = peeks.filter(x => x.hx > 20);
+      if (wrong.length) return no('Came out on the visitor\'s side (right) after they crouched.');
+      return ok('Hid while they stood, then came out on the left ' + s1((peeks[0].t - 40000) / 1000) + ' s after they crouched.');
+    } },
+];
+
+function runScene(key, code, sceneId, onDone, sync) {
+  const sc = SCENES[sceneId], samples = [];
+  const sim = new Sim(key, code, { scenario: sc.fn, onSample: x => samples.push(x) });
+  const finish = () => onDone({ key, samples, error: sim.error, warnings: [...sim.warned.values()], stats: sim.stats });
+  if (sim.dead) return finish();
+  const chunk = () => {
+    const t0 = Date.now();
+    while (sim.t < sc.dur && !sim.dead && (sync || Date.now() - t0 < 25)) sim.advance(Math.min(250, sc.dur - sim.t), 3000000);
+    if (sim.t >= sc.dur || sim.dead) finish(); else setTimeout(chunk, 0);
+  };
+  chunk();
+}
+function evaluate(runs) {
+  return TESTS.map(t => {
+    if (t.id === 'safe') return t.check(runs);
+    const r = runs[t.scene];
+    if (r.error) return no(r.error);
+    return t.check(r);
+  });
+}
+
+return { CONCEPTS, EXAMPLES, transpile, Sim, poseOf, SCENES, TESTS, runScene, evaluate, L1, L2, R, HEAD, RAD };
+})();
+if (typeof module !== 'undefined') module.exports = FOX;
+</script>
+
+<script>
+/* ---------- UI ---------- */
+(function () {
+const { CONCEPTS, EXAMPLES, Sim, poseOf, SCENES, TESTS, runScene, evaluate, R, RAD } = FOX;
+const $ = id => document.getElementById(id);
+const f = n => (Math.round(n * 10) / 10).toString();
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+
+const concept = 'B';
+const codes = { B: store.get('foxsim-v9-code-B') || EXAMPLES.B };
+let sim = null, running = false, speed = 1, playing = null, last = performance.now();
+const viewer = { x: 60, d: 150, crouch: false };
+
+/* Editor */
+let cm = null;
+if (window.CodeMirror) {
+  cm = CodeMirror.fromTextArea($('code'), { mode: 'text/x-c++src', lineNumbers: true, indentUnit: 2, tabSize: 2, smartIndent: true, viewportMargin: 40 });
+  cm.on('change', () => { codes[concept] = cm.getValue(); store.set('foxsim-v9-code-' + concept, codes[concept]); });
+} else {
+  $('code').addEventListener('input', () => { codes[concept] = $('code').value; store.set('foxsim-v9-code-' + concept, codes[concept]); });
+}
+const getCode = () => (cm ? cm.getValue() : $('code').value);
+const setCode = v => { if (cm) cm.setValue(v); else $('code').value = v; };
+
+/* Serial monitor */
+const serialEl = $('serial'); let pending = [];
+function out(text, kind) { pending.push([text, kind]); }
+function flushSerial() {
+  if (!pending.length) return;
+  const frag = document.createDocumentFragment();
+  for (const [text, kind] of pending) { const s = document.createElement('span'); if (kind) s.className = kind; s.textContent = text + '\n'; frag.appendChild(s); }
+  pending = [];
+  const atBottom = serialEl.parentElement.scrollTop + serialEl.parentElement.clientHeight >= serialEl.parentElement.scrollHeight - 30;
+  serialEl.appendChild(frag);
+  while (serialEl.childNodes.length > 400) serialEl.removeChild(serialEl.firstChild);
+  if (atBottom) serialEl.parentElement.scrollTop = serialEl.parentElement.scrollHeight;
+}
+
+/* Sim control */
+function idle() { sim = new Sim(concept, null, { viewer }); running = false; }
+function start(scene) {
+  serialEl.textContent = ''; pending = [];
+  playing = scene || null;
+  sim = new Sim(concept, getCode(), { out, viewer, scenario: scene ? SCENES[scene].fn : null });
+  if (sim.dead) { running = false; showDock('serial'); setState('The sketch did not start. See the serial monitor.'); return; }
+  running = true; setState(scene ? 'Playing a test scene. Press Stop or Run to take the visitor back.' : 'Running. Drag the visitor to see how the fox reacts.');
+}
+function stop(msg) { running = false; playing = null; setState(msg || 'Stopped.'); }
+function setState() {}
+$('run').onclick = () => start(null);
+$('stop').onclick = () => stop();
+$('reset').onclick = () => { setCode(EXAMPLES[concept]); stop('Example sketch restored. Press Run to upload it.'); idle(); };
+$('speed').onchange = e => { speed = Number(e.target.value); };
+
+
+/* Dock tabs */
+function showDock(name) {
+  for (const b of document.querySelectorAll('.dock-tab')) b.setAttribute('aria-selected', String(b.dataset.panel === name));
+  for (const p of ['serial', 'tests', 'ref']) $('panel-' + p).hidden = p !== name;
+}
+for (const b of document.querySelectorAll('.dock-tab')) b.onclick = () => showDock(b.dataset.panel);
+
+/* Room: top-down view of where the visitor stands */
+const room = $('room');
+const RX = x => 300 + x * 2.6, RY = d => 18 + d / 250 * 124;
+function drawRoom() {
+  const v = sim.viewer, p = poseOf(sim);
+  let s = `<rect x="0" y="0" width="600" height="${RY(100)}" fill="#FBEDE6"/><line x1="0" x2="600" y1="${RY(100)}" y2="${RY(100)}" stroke="#E2B8A4" stroke-dasharray="4 4"/>` +
+    `<rect x="0" y="${RY(200)}" width="600" height="${150 - RY(200)}" fill="#F1F2F0"/><line x1="0" x2="600" y1="${RY(200)}" y2="${RY(200)}" stroke="#B5BAB6" stroke-dasharray="4 4"/>`;
+  s += `<rect x="252" y="8" width="96" height="7" rx="3" fill="#D9DCD9" stroke="#9AA09C"/>`;
+  const hx = 300 + p.head[0] / 300 * 48;
+  s += `<circle cx="${hx}" cy="11" r="5" fill="#D2622A" opacity="${Math.hypot(p.head[0], p.head[1]) > 250 ? 1 : 0.25}"/>`;
+  const cx = RX(v.x), cy = RY(Math.min(v.d, 245)), r = v.crouch ? 7 : 11;
+  s += v.d < 200
+    ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#2F6FB0"/>`
+    : `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#9AA09C" stroke-width="2" stroke-dasharray="3 3"/>`;
+  room.innerHTML = s;
+  room.classList.toggle('locked', !!(running && playing));
+}
+let dragging = false;
+function roomPoint(e) {
+  const r = room.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 600, y = (e.clientY - r.top) / r.height * 150;
+  viewer.x = Math.max(-100, Math.min(100, (x - 300) / 2.6));
+  viewer.d = Math.max(20, Math.min(250, (y - 18) / 124 * 250));
+}
+room.addEventListener('pointerdown', e => { if (running && playing) return; dragging = true; room.setPointerCapture(e.pointerId); roomPoint(e); });
+room.addEventListener('pointermove', e => { if (dragging) roomPoint(e); });
+room.addEventListener('pointerup', () => { dragging = false; });
+room.addEventListener('pointercancel', () => { dragging = false; });
+$('crouch').onchange = e => { viewer.crouch = e.target.checked; };
+
+/* Stage drawing (millimetres, y down on screen) */
+const stage = $('stage');
+function headSVG(x, y, ang, eL, eR) {
+  const rl = eL < 90 ? -(90 - eL) * 0.7 : (eL - 90) * 0.3, rr = eR < 90 ? (90 - eR) * 0.7 : -(eR - 90) * 0.3;
+  return `<g transform="translate(${f(x)} ${f(y)}) rotate(${f(ang)}) scale(2.2)">
+    <polygon points="-18,-10 -22,-38 -5,-18" fill="#D2622A" stroke="#6E2A10" stroke-width="0.7" transform="rotate(${f(rl)} -12 -14)"/>
+    <polygon points="18,-10 22,-38 5,-18" fill="#D2622A" stroke="#6E2A10" stroke-width="0.7" transform="rotate(${f(rr)} 12 -14)"/>
+    <polygon points="-15,-14 -18,-31 -8,-18" fill="#3A1A0C" opacity=".55" transform="rotate(${f(rl)} -12 -14)"/>
+    <polygon points="15,-14 18,-31 8,-18" fill="#3A1A0C" opacity=".55" transform="rotate(${f(rr)} 12 -14)"/>
+    <path d="M-22,-5 Q0,-27 22,-5 L4,23 Q0,27 -4,23 Z" fill="#D2622A" stroke="#6E2A10" stroke-width="0.7"/>
+    <path d="M-12,7 L0,23 L12,7 Q0,14 -12,7Z" fill="#FAEDE6"/>
+    <circle cx="-7" cy="0" r="2.6" fill="#1D1A18"/><circle cx="7" cy="0" r="2.6" fill="#1D1A18"/><circle cx="0" cy="22" r="2.8" fill="#1D1A18"/></g>`;
+}
+const SERVO = '#2F6FB0', STEEL = '#3B433F', STEEL2 = '#5E6763';
+function servoBox(x, y, w, h, rot) { return `<rect x="${f(x - w / 2)}" y="${f(y - h / 2)}" width="${w}" height="${h}" rx="5" fill="${SERVO}" stroke="#1C4877" stroke-width="1.5" transform="rotate(${f(rot || 0)} ${f(x)} ${f(y)})"/>`; }
+function drawStage() {
+  const p = poseOf(sim), shake = sim.pins[13] ? Math.sin(performance.now() / 18) * 4 : 0;
+  let mech = '';
+  {
+    const u = [Math.sin(p.phi * RAD), -Math.cos(p.phi * RAD)], P = r => [u[0] * r, u[1] * r];
+    const a = P(292), b = P(-76), m = P(60), c = P(p.carriageR), h = [p.head[0], -p.head[1]];
+    mech += `<rect x="-14" y="0" width="28" height="${R}" fill="#8C918D" opacity=".55"/>`;
+    mech += `<line x1="${f(b[0])}" y1="${f(b[1])}" x2="${f(a[0])}" y2="${f(a[1])}" stroke="${STEEL2}" stroke-width="20" stroke-linecap="round"/>`;
+    mech += `<line x1="${f(b[0])}" y1="${f(b[1])}" x2="${f(a[0])}" y2="${f(a[1])}" stroke="#1D2220" stroke-width="3" stroke-dasharray="8 6" stroke-dashoffset="${f(-sim.lift.x * 2)}"/>`;
+    mech += `<circle cx="${f(b[0])}" cy="${f(b[1])}" r="22" fill="#2A2F2D"/>`;
+    mech += servoBox(m[0], m[1], 34, 26, p.phi) + `<circle cx="0" cy="0" r="28" fill="#C9CCC9" stroke="#6E746F" stroke-width="3"/>` + servoBox(c[0], c[1], 40, 36, p.phi);
+    mech += `<line x1="${f(c[0])}" y1="${f(c[1])}" x2="${f(h[0])}" y2="${f(h[1])}" stroke="#9AA09C" stroke-width="8" stroke-linecap="round"/>`;
+    const wr = p.ang * RAD;
+    mech += `<line x1="${f(h[0])}" y1="${f(h[1])}" x2="${f(h[0] - Math.sin(wr) * 70)}" y2="${f(h[1] + Math.cos(wr) * 70)}" stroke="#5E6763" stroke-width="4"/><circle cx="${f(h[0] - Math.sin(wr) * 70)}" cy="${f(h[1] + Math.cos(wr) * 70)}" r="12" fill="#3B433F"/>`;
+  }
+  const head = headSVG(p.head[0], -p.head[1], p.ang, p.earL, p.earR);
+  stage.innerHTML = `<defs>
+      <clipPath id="outside"><path clip-rule="evenodd" fill-rule="evenodd" d="M-480 -420H480V370H-480Z M${f(300 + shake)} 0A300 300 0 1 0 ${f(-300 + shake)} 0A300 300 0 1 0 ${f(300 + shake)} 0Z"/></clipPath>
+    </defs>
+    <rect x="-480" y="-420" width="960" height="790" fill="#FFFFFF"/>
+    <rect x="-330" y="300" width="660" height="18" rx="4" fill="#E4E6E3"/>
+    ${mech}${head}
+    <circle cx="${f(shake)}" cy="0" r="${R}" fill="#DADDDA" fill-opacity=".86" stroke="#B5BAB6" stroke-width="2"/>
+    <g clip-path="url(#outside)">${head}</g>`;
+}
+/* Main loop. A timer rather than animation frames, so it keeps going in any embedded view. */
+function frame() {
+  const now = performance.now(), dt = Math.min(50, now - last); last = now;
+  if (!playing) Object.assign(sim.viewer, viewer);
+  if (running && !sim.dead) {
+    sim.advance(dt * speed);
+    if (playing && sim.t >= SCENES[playing].dur) stop('Test scene finished.');
+  } else if (running && sim.dead) stop('Stopped because of an error. See the serial monitor.');
+  if (!running) { sim.prevD = sim.viewer.d; sim.readSense(); }
+  drawStage(); drawRoom();
+  flushSerial();
+}
+
+/* Tests */
+const testsEl = $('tests');
+function resetTests() {
+  testsEl.innerHTML = TESTS.map(t => `<div class="test" id="t-${t.id}">
+      <span class="pill" id="p-${t.id}">${t.bonus ? 'Bonus' : 'Not run'}</span>
+      <div><h3>${t.name}</h3><p class="detail" id="d-${t.id}"></p></div>
+      ${t.scene ? `<button class="btn small" data-scene="${t.scene}">Watch</button>` : '<span></span>'}
+    </div>`).join('');
+  for (const b of testsEl.querySelectorAll('button[data-scene]')) b.onclick = () => { start(b.dataset.scene); };
+  $('test-count').textContent = '';
+  $('teststate').textContent = '';
+}
+$('runtests').onclick = () => {
+  const code = getCode(), runs = {}, ids = Object.keys(SCENES);
+  stop('Running tests…');
+  for (const t of TESTS) { $('p-' + t.id).className = 'pill run'; $('p-' + t.id).textContent = 'Running'; $('d-' + t.id).textContent = ''; }
+  $('runtests').disabled = true;
+  let i = 0;
+  const next = () => {
+    if (i >= ids.length) {
+      const res = evaluate(runs); let passed = 0, total = 0;
+      res.forEach((r, k) => {
+        const t = TESTS[k], pill = $('p-' + t.id);
+        pill.className = 'pill ' + r.status; pill.textContent = r.status === 'pass' ? 'Pass' : (r.status === 'notyet' ? 'Not yet' : 'Fail');
+        $('d-' + t.id).textContent = r.detail;
+        if (!t.bonus) { total++; if (r.status === 'pass') passed++; }
+      });
+      $('test-count').textContent = passed + '/' + total;
+      $('runtests').disabled = false; setState('Tests finished. Press Run to drive the visitor yourself.');
+      return;
+    }
+    const id = ids[i++];
+    runScene(concept, code, id, r => { runs[id] = r; setTimeout(next, 0); });
+  };
+  next();
+};
+
+/* Reference */
+function renderRef() {
+  const pins = [
+    ['3', 'Ear servo. Pulls a wire that folds both ears down. 0 = ears down (scared), 90 = wire loose, a rubber band holds the ears up.'],
+    ['4, 5, 6, 7', 'Second stepper driver board (IN1 to IN4) for the turntable 28BYJ-48. Stepper turnStepper(2048, 4, 6, 5, 7);. The turntable sits on the motor shaft, so 2048 steps is a full circle and 1024 steps is half: from left (0°) over the top to right (180°). A stop peg at the left end is where it homes at power-on.'],
+    ['8, 9, 10, 11', 'Stepper driver board (IN1 to IN4) for the 28BYJ-48 lift motor. Stepper liftStepper(2048, 8, 10, 9, 11); liftStepper.setSpeed(12); liftStepper.step(n);. 2048 steps is one turn, which moves the belt 60 mm on the 12-tooth, 5 mm pitch pulley from the cupboard. A counterweight on the other side of the belt balances the fox, so 12 turns a minute is fine: above 13 it may skip, above 15 it stalls.'],
+    ['13', 'Plate shaker. digitalWrite(13, HIGH) to rattle the plate.'],
+  ];
+  $('panel-ref').innerHTML = `
+    <h3>Wiring</h3>
+    <table>${pins.map(p => `<tr><td>pin ${p[0]}</td><td>${p[1]}</td></tr>`).join('')}</table>
+    <p>${'The lift moves the head from 240 mm (hidden) to 340 mm (fully out) from the plate centre. The plate radius is 300 mm. The head hangs on a pivot with a weight under it, so it stays level by itself and swings a little when the turntable stops. A counterweight clamped to the other side of the belt slides in as the fox slides out.'} The fox counts as hidden when its head centre is under 250 mm from the plate centre, and peeking when it is over 285 mm.</p>
+    <h3>What Wekinator sends</h3>
+    <p>Wekinator has one classifier. Processing sends the class number to the Arduino when it changes. Read it with Serial.read().</p>
+    <table>
+      <tr><td>1</td><td>Hide. Someone is close, or rushing at the fox.</td></tr>
+      <tr><td>2</td><td>Peek out on the left.</td></tr>
+      <tr><td>3</td><td>Peek out up and to the left.</td></tr>
+      <tr><td>4</td><td>Peek out over the top.</td></tr>
+      <tr><td>5</td><td>Peek out up and to the right.</td></tr>
+      <tr><td>6</td><td>Peek out on the right.</td></tr>
+    </table>
+    <p>Here a pretend Wekinator decides: the camera sees 2 m. It sends class 1 (hide) when someone stands within 1 m or rushes at it. When they are further away (1 to 2 m) or crouching, it picks the spot away from them: the further right they are, the further left the fox peeks. With nobody there it sends 4 (over the top). The real one does whatever you train it to.</p>
+    <h3>Arduino functions you can use</h3>
+    <table>
+      <tr><td>Stepper m(2048, 8, 10, 9, 11); m.setSpeed(rpm); m.step(n);</td><td>The standard Arduino stepper library. step() waits until the move is finished, so move a few steps at a time if you want to react to Wekinator in between.</td></tr>
+    <tr><td>Servo s; s.attach(pin); s.write(deg);</td><td>Servos move at their real speed, so a write takes a moment to finish. Also s.read(), s.writeMicroseconds(us).</td></tr>
+      <tr><td>delay(ms), millis()</td><td>Wait, and the time since power-on.</td></tr>
+      <tr><td>pinMode, digitalWrite, digitalRead, analogWrite</td><td>As on a real Arduino, for the pins above.</td></tr>
+      <tr><td>Serial.print, Serial.println</td><td>Shows up in the serial monitor.</td></tr>
+      <tr><td>random, map, constrain, abs, min, max</td><td>Also sin, cos, atan2, acos, sqrt, pow, degrees(), radians(), PI.</td></tr>
+    </table>
+    <h3>Differences from a real Arduino</h3>
+    <p>Numbers keep their decimals, so 5 / 2 is 2.5. Write (int)(5 / 2) to round down. A static variable inside a function resets every call, so use a global instead. Classes, structs and pointers are not supported. Everything in the examples works the same on the real board.</p>`;
+}
+
+/* Boot */
+/* Resizing: Expand widens the code over the sim; the editor's bottom corner sets its height */
+const grid = document.querySelector('.grid'), editorBox = document.querySelector('.editor');
+function setWide(on) {
+  grid.classList.toggle('wide', on);
+  $('expand').textContent = on ? 'Shrink' : 'Expand';
+  $('expand').setAttribute('aria-pressed', String(on));
+  store.set('foxsim-wide', on ? '1' : '');
+  if (cm) cm.refresh();
+}
+$('expand').onclick = () => setWide(!grid.classList.contains('wide'));
+setWide(store.get('foxsim-wide') === '1');
+const savedH = Number(store.get('foxsim-editor-h'));
+if (savedH >= 200) editorBox.style.height = savedH + 'px';
+if (window.ResizeObserver) new ResizeObserver(() => {
+  if (cm) cm.refresh();
+  if (editorBox.offsetHeight >= 200) store.set('foxsim-editor-h', String(editorBox.offsetHeight));
+}).observe(editorBox);
+
+setCode(codes.B); idle(); renderRef(); resetTests();
+setInterval(frame, 16);
+})();
+</script>
+
+</html>
