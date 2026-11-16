@@ -12,7 +12,9 @@ Demo video (click to download video).
 
 “A study of 18 samples at the University of Wolverhampton found that urban fox scat contained 135 dangerous artificial chemicals from 17 of the scats, including some which have likely originated from consumption of discarded cigarette ends and petrol.” [ https://mammal.org.uk/british-mammals/red-fox]
 
-Foxes are survivors, adapting their omnivorous desires to the environment they inhabit, including London itself. Due to their adaptability and survivability, however, we take their existence for granted. The existence of humans on earth, especially in urban areas, never fails to lack consideration for the impact of the other species that inhabit the same planet. We walk through these spaces as animals retreat simply from the result of our presence, knowing that our existence historically and inherently is threatening. How do we consider our impact on their lives, when the built environment we collectively inhabit  is constructed to ignore and exclude them?
+Foxes are survivors, adapting their omnivorous desires to the environment they inhabit, including London itself. Due to their adaptability and survivability; however, we take their existence for granted. The existence of humans on earth, especially in urban areas, never fails to lack consideration for the impact of the other species that inhabit the same planet. We walk through these spaces as animals retreat simply from the result of our presence, knowing that our existence historically and inherently is threatening. How do we consider our impact on their lives, when the built environment we collectively inhabit is constructed to ignore and exclude them?
+
+The relationship between urban fox and urban human is reflective of the relationship humans have with many other animals in the world. The approaching presence of a person causes a fox to scatter or hide. We've made ourselves untrustworthy.
 
 “The Fearful Fox” is a piece designed to explore these issues.
 
