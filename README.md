@@ -110,9 +110,9 @@ The initial design also relied on a stepper motor with a 1:64 gear ratio; switch
 
 We also developed and tested a “head tilt” mechanism through gravitational force, and further plans were developed for ear actuation, although these were not tested or deployed due to time constraints and our switch to a different production method.
 
-<img width="1600" height="900" alt="WhatsApp Image 2026-11-16 at 14 33 09" src="https://github.com/user-attachments/assets/33dd0fe3-f696-491e-81a1-3282412d22ff" />
+<img width="1600" height="900" alt="Robot_build_v1" src="https://github.com/user-attachments/assets/33dd0fe3-f696-491e-81a1-3282412d22ff" />
 
-<img width="934" height="876" alt="WhatsApp Image 2026-11-16 at 14 33 09 (1)" src="https://github.com/user-attachments/assets/39823565-cb4d-4a4d-9dec-686838df532c" />
+<img width="934" height="876" alt="Robot_build_v1_fox" src="https://github.com/user-attachments/assets/39823565-cb4d-4a4d-9dec-686838df532c" />
 
 ![The first build on the workshop bench](images/wip-early-prototype.jpg)
 
