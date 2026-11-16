@@ -26,6 +26,8 @@ The fox is represented with 3 fox heads. Three heads sit behind a metal plate, o
 
 ## Mechanical design
 
+![Front of the fox and what's behind the plate](diagrams/fox-views.svg)
+
 Each head is on its own rack and pinion. A stepper motor turns the pinion, and the rack slides the head out from behind the plate and back. The three units share one printed design: a mount plate (3) holding the motor (1), the pinion (2) on the motor shaft, a rack (4) running past it between two side posts, and the head at the end of the rack. The side heads slide along the base and the top head rises on a vertical tower.
 
 ![The mount plate with the pinion on the motor shaft](images/carriage-labelled.jpg)
@@ -33,8 +35,6 @@ Each head is on its own rack and pinion. A stepper motor turns the pinion, and t
 ![A rack on its mount plate with the motor and a head](images/rack-labelled.jpg)
 
 The CAD files are in the cad folder.
-
-![Front of the fox and what's behind the plate](diagrams/fox-views.svg)
 
 The side heads travel about 900 steps (the motors make 2048 steps per turn). The top head travels about 4800 to 5000 steps because the motor is slower. Every move runs its first and last 100 steps at a lower speed to avoid jerking.
 
